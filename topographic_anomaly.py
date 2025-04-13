@@ -70,7 +70,7 @@ class MeasurementPoint:
     
     def angle_to(self, other_point):
         return atan2(other_point.east - self.east, other_point.north - self.north)
-                
+
 class ReferencePoint:
     def __init__(self, id, north, east, height):
         self.id = id
@@ -84,13 +84,6 @@ class ReferencePoint:
     
     def angle_to(self, other_point):
         return atan2(other_point.east - self.east, other_point.north - self.north)
-
-class ReferencePoint:
-    def __init__(self, id, north, east, height):
-        self.id = id
-        self.north = float(north.replace(',', '.')) if isinstance(north, str) else float(north)
-        self.east = float(east.replace(',', '.')) if isinstance(east, str) else float(east)
-        self.height = float(height.replace(',', '.')) if isinstance(height, str) else float(height)
 
 def calculate_correction(measurement_point):
     correction = 0

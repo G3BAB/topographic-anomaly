@@ -43,6 +43,8 @@ DEM_point_id_header = 'OBJECTID'
 gravity_constant = 6.67430e-11  # m^3 kg^-1 s^-2
 rho = 2.670  # g/m^3
 
+ref_point_seek_range = 1200 # in meters
+
 class MeasurementPoint:
     def __init__(self, id, north, east, height):
         self.id = id
@@ -55,11 +57,11 @@ class MeasurementPoint:
     def connect_reference_point(self, ref_point, distance, angle):
         slice = int((angle + pi) / (pi / 4)) % 8 + 1
 
-        if distance <= 1200:
+        if distance <= ref_point_seek_range:
             self.connected_refs.append({'ref_point': ref_point, 'distance': distance, 'slice': slice})
 
             slice_data = self.slice_distances[slice]
-            slice_data['closest'] = min(slice_data['closest'], distance) if slice_data['closest'] <= 1200 else distance
+            slice_data['closest'] = min(slice_data['closest'], distance) if slice_data['closest'] <= ref_point_seek_range else distance
             slice_data['farthest'] = max(slice_data['farthest'], distance)
 
 
@@ -122,22 +124,22 @@ def calculate_correction_verbose(measurement_point):
     for i, slice_data in measurement_point.slice_distances.items():
         print(f"Slice {i}:")
         avg_ref_height = 0
-        if slice_data['farthest'] > 0:  # Check if there are reference points in the slice
+        if slice_data['farthest'] > 0:  # Checks if there are reference points in the slice
             R = slice_data['farthest']
             r = slice_data['closest']
             
             ref_heights = [ref_point['ref_point'].height for ref_point in measurement_point.connected_refs if ref_point['slice'] == i]
             print(f"  Reference Point Heights in the Slice: {ref_heights}")
             
-            # Calculate average reference point height for the slice
+            # Calculates average reference point height for the slice
             if ref_heights:
                 avg_ref_height = sum(ref_heights) / len(ref_heights)
                 avg_height_difference = measurement_point.height - avg_ref_height
             else:
-                avg_height_difference = measurement_point.height  # Use measurement point height if no reference points
+                avg_height_difference = measurement_point.height  # Uses measurement point height if no reference points
 
-            print(f"  Closest point distance within 1200m (r): {r}")
-            print(f"  Farthest point distance within 1200m (R): {R}")
+            print(f"  Closest point distance within selected range (r): {r}")
+            print(f"  Farthest point distance within selected range (R): {R}")
             print(f"  Average reference point height (avg_ref_height): {avg_ref_height}")
             print(f"  Average height difference (h_avg): {avg_height_difference}")
 
@@ -146,22 +148,22 @@ def calculate_correction_verbose(measurement_point):
             print(f"  sqrt_part1: {sqrt_part1}")
             print(f"  sqrt_part2: {sqrt_part2}")
 
-            # Apply the corrected sum formula
+            # Applies the corrected sum formula
             summand = (R - 0 + sqrt_part1 - sqrt_part2)
             print(f"  Summand for slice: {summand}")
             correction += summand
         else:
-            print("  No reference points in this slice within 1200m.")
+            print("  No reference points in this slice within selected range.")
     
     correction *= (2/8) * pi * gravity_constant * rho * 1000
     print(f"Total correction for Measurement Point ID {measurement_point.id}: {correction}\n")
     return correction
 
-# Create instances
+# Creates instances
 measurement_points = [MeasurementPoint(row[data_point_id_header], row[data_latitude_header], row[data_longitude_header], row[data_elevation_header]) for _, row in measurement_df.iterrows()]
 reference_points = [ReferencePoint(row[DEM_id_header], row[DEM_latitude_header], row[DEM_longitude_header], row[DEM_elevation_header]) for _, row in reference_df.iterrows()]
 
-# Find and connect reference points, and update slice distances
+# Finds and connects reference points; updates slice distances
 for m_point in measurement_points:
     for r_point in reference_points:
         distance = m_point.distance_to(r_point)

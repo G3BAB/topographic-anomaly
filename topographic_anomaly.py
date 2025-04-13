@@ -1,5 +1,11 @@
 
 # Usage:
+# The script requires two excel workbooks, one with measurement point data,
+# discrete elevation model.
+# 
+# Both files shoud contain longitude, latitude, elevation, and ID number for 
+# each point (the names of the columns are customizable as variables).
+#
 # Measurement data should be in Excel workbook,
 # By default the file should be named "data.xlsx". Work sheet should be named "data"
 #
@@ -9,9 +15,28 @@
 # By default both .xlsx files should be in execution directory
 # Resulting output will be saved in a new column in data.xlsx.
 
+
 import pandas as pd
 from math import sqrt, atan2, pi
 
+# Load data from Excel
+file_path_meas = 'data.xlsx'
+file_path_ref = 'dem.xlsx'
+measurement_df = pd.read_excel(file_path_meas, sheet_name='data')
+reference_df = pd.read_excel(file_path_ref, sheet_name='dem')
+
+# Customization of header names
+data_latitude_header = 'NG'
+data_longitude_header = 'EG'
+data_elevation_header = 'H'
+data_point_id_header = 'OBJECTID_1'
+
+DEM_latitude_header = 'NCN'
+DEM_longitude_header = 'NCE'
+DEM_elevation_header = 'Hnorm'
+DEM_point_id_header = 'OBJECTID'
+
+# Constants
 gravity_constant = 6.67430e-11  # m^3 kg^-1 s^-2
 rho = 2.670  # g/m^3
 
@@ -86,7 +111,7 @@ def calculate_correction(measurement_point):
     correction *= (2/8) * pi * gravity_constant * rho * 10**5
     return correction
 
-# Function to calculate the correction for a single measurement point with detailed output
+# Function to calculate the correction for a single measurement point
 def calculate_correction_verbose(measurement_point):
     print(f"Calculating correction for Measurement Point ID: {measurement_point.id}")
     print(f"Measurement Point Height: {measurement_point.height}")
@@ -129,16 +154,9 @@ def calculate_correction_verbose(measurement_point):
     print(f"Total correction for Measurement Point ID {measurement_point.id}: {correction}\n")
     return correction
 
-
-# Load data from Excel
-file_path_meas = 'dane.xlsx'
-file_path_ref = 'nmt.xlsx'
-measurement_df = pd.read_excel(file_path_meas, sheet_name='dane')
-reference_df = pd.read_excel(file_path_ref, sheet_name='nmt')
-
 # Create instances
-measurement_points = [MeasurementPoint(row['OBJECTID_1'], row['NG'], row['EG'], row['H']) for _, row in measurement_df.iterrows()]
-reference_points = [ReferencePoint(row['OBJECTID'], row['NCN'], row['NCE'], row['Hnorm']) for _, row in reference_df.iterrows()]
+measurement_points = [MeasurementPoint(row[data_point_id_header], row[data_latitude_header], row[data_longitude_header], row[data_elevation_header]) for _, row in measurement_df.iterrows()]
+reference_points = [ReferencePoint(row[DEM_id_header], row[DEM_latitude_header], row[DEM_longitude_header], row[DEM_elevation_header]) for _, row in reference_df.iterrows()]
 
 # Find and connect reference points, and update slice distances
 for m_point in measurement_points:

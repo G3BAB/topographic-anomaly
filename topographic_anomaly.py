@@ -21,9 +21,12 @@ from math import sqrt, atan2, pi
 
 # Load data from Excel
 file_path_meas = 'data.xlsx'
-file_path_ref = 'dem.xlsx'
-measurement_df = pd.read_excel(file_path_meas, sheet_name='data')
-reference_df = pd.read_excel(file_path_ref, sheet_name='dem')
+file_path_dem = 'dem.xlsx'
+sheet_name_meas = 'data'
+sheet_name_dem = 'dem'
+
+measurement_df = pd.read_excel(file_path_meas, sheet_name=sheet_name_meas)
+reference_df = pd.read_excel(file_path_dem, sheet_name=sheet_name_dem)
 
 # Customization of header names
 data_latitude_header = 'NG'
@@ -171,5 +174,5 @@ for m_point in measurement_points:
 
 grav_corrections = [calculate_correction(m_point) for m_point in measurement_points]
 measurement_df['grav_cor'] = grav_corrections
-measurement_df.to_excel('dane.xlsx', sheet_name='dane', index=False)
-reference_df.to_excel('nmt.xlsx', sheet_name='nmt', index=False)
+measurement_df.to_excel(file_path_meas, sheet_name=sheet_name_meas, index=False)
+reference_df.to_excel(file_path_dem, sheet_name=sheet_name_dem, index=False)

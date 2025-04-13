@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
 
 # Instrukcja:
 # Tabelę z punktami pomiarowymi skopiować do Excela, plik nazwać "dane.xlsx". Zeszyt nazwać "dane"
@@ -93,13 +91,14 @@ def calculate_correction_verbose(measurement_point):
     correction = 0
     for i, slice_data in measurement_point.slice_distances.items():
         print(f"Slice {i}:")
-        avg_ref_height = 0  # Initialize avg_ref_height
+        avg_ref_height = 0
         if slice_data['farthest'] > 0:  # Check if there are reference points in the slice
             R = slice_data['farthest']
             r = slice_data['closest']
-            # Print heights of each reference point in the slice
+            
             ref_heights = [ref_point['ref_point'].height for ref_point in measurement_point.connected_refs if ref_point['slice'] == i]
             print(f"  Reference Point Heights in the Slice: {ref_heights}")
+            
             # Calculate average reference point height for the slice
             if ref_heights:
                 avg_ref_height = sum(ref_heights) / len(ref_heights)
@@ -112,13 +111,12 @@ def calculate_correction_verbose(measurement_point):
             print(f"  Average reference point height (avg_ref_height): {avg_ref_height}")
             print(f"  Average height difference (h_avg): {avg_height_difference}")
 
-            # Break down the square root calculations
             sqrt_part1 = sqrt(avg_height_difference**2 + 0**2)
             sqrt_part2 = sqrt(avg_height_difference**2 + R**2)
             print(f"  sqrt_part1: {sqrt_part1}")
             print(f"  sqrt_part2: {sqrt_part2}")
 
-            # Apply the corrected summand formula
+            # Apply the corrected sum formula
             summand = (R - 0 + sqrt_part1 - sqrt_part2)
             print(f"  Summand for slice: {summand}")
             correction += summand
@@ -130,26 +128,15 @@ def calculate_correction_verbose(measurement_point):
     return correction
 
 
-# In[8]:
-
-
 # Load data from Excel
 file_path_meas = 'dane.xlsx'
 file_path_ref = 'nmt.xlsx'
 measurement_df = pd.read_excel(file_path_meas, sheet_name='dane')
 reference_df = pd.read_excel(file_path_ref, sheet_name='nmt')
 
-
-# In[9]:
-
-
 # Create instances
 measurement_points = [MeasurementPoint(row['OBJECTID_1'], row['NG'], row['EG'], row['H']) for _, row in measurement_df.iterrows()]
 reference_points = [ReferencePoint(row['OBJECTID'], row['NCN'], row['NCE'], row['Hnorm']) for _, row in reference_df.iterrows()]
-
-
-# In[10]:
-
 
 # Find and connect reference points, and update slice distances
 for m_point in measurement_points:
@@ -162,30 +149,7 @@ for m_point in measurement_points:
 #     correction = calculate_correction(m_point)
 #     print(f"Measurement Point ID: {m_point.id}, Gravitational Correction: {correction}")
 
-
-# In[11]:
-
-
-# first_point_correction = calculate_correction_verbose(measurement_points[0])
-
-
-# In[12]:
-
-
 grav_corrections = [calculate_correction(m_point) for m_point in measurement_points]
 measurement_df['grav_cor'] = grav_corrections
 measurement_df.to_excel('dane.xlsx', sheet_name='dane', index=False)
 reference_df.to_excel('nmt.xlsx', sheet_name='nmt', index=False)
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
-

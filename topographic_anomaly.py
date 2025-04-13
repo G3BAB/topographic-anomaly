@@ -1,11 +1,13 @@
 
-# Instrukcja:
-# Tabelę z punktami pomiarowymi skopiować do Excela, plik nazwać "dane.xlsx". Zeszyt nazwać "dane"
-# Tabelę z NMT skopiować do Excela, plik nazwać "nmt.xlsx", zeszyt nazwać "nmt".
-# Oba pliki umieścić w folderze w którym uruchamiany jest kod.
-# Wyniki są zapisywane do nowej kolumny "dane.xlsx".
-In[7]:
-
+# Usage:
+# Measurement data should be in Excel workbook,
+# By default the file should be named "data.xlsx". Work sheet should be named "data"
+#
+# DEM data table should be in Excel workbook,
+# By default file should be named "dem.xlsx", work sheet named "dem".
+#
+# By default both .xlsx files should be in execution directory
+# Resulting output will be saved in a new column in data.xlsx.
 
 import pandas as pd
 from math import sqrt, atan2, pi
